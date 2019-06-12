@@ -68,7 +68,7 @@ Class|Order|Family|Genus|Species = The levels of classification of the given pre
 
 MOTU =The MOTU kept after analysis
 
-Original Primer = The primer from where the observation was took
+Original Primer = The primer from where the observation was taken
 
 Merged? = True if other entries where merged with this one; False if no merging occurred
 
