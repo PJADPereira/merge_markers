@@ -100,8 +100,8 @@ class primer:
 
     def __sub__(self, other):
         ''' The subtract method was designed to take care of the actual merging of primers '''
-        l_this_prey = list(self.prey_items)
-        l_other_prey = list(other.prey_items)
+        l_this_prey = sorted(self.prey_items,key=lambda x: x.max_level(),reverse=True)
+        l_other_prey = sorted(other.prey_items,key=lambda x: x.max_level(),reverse=True)
 
         def inv_distance(this_prey, other_prey):
             ''' Internal function of the method __sub__ that checks how similar two prey_items are
@@ -199,7 +199,7 @@ class prey:
     Class -> Order -> Family -> Genus -> Species order'''
 
     def __init__(self, primer, line):
-        self.level_classification = ["Class", "Order", "Family", "Genus", "Species"]
+        self.level_classification = ["Kingdom","Class", "Order", "Family", "Genus", "Species"]
         self.from_primer = primer
         self.merged = []
         self.classification = list([None if x == "unk" or x == "" or x == " " or x == "None" or x == "none" else x for x in line[:-1]])
@@ -207,14 +207,16 @@ class prey:
 
     def __repr__(self):
         ''' Prints out the max classification level of the prey item '''
-        return self.max_level()[0]
+        return "This prey higher classification is {} which corresponds to the {}".format(self.classification[self.max_level()],self.level_classification[self.max_level()])
 
     def max_level(self):
         '''Determines the max classification level of this prey item '''
-        for index in range(len(self.classification)):
-            if self.classification[index+1] is None:
-                return (self.level_classification[index], self.classification[index])
-
+        max_level = [i for i,x in enumerate(self.classification) if x is None]
+        if len(max_level) == 0: # if no entries are None in classificaition it reached species which has index 5
+            max_level = 5
+        else:
+            max_level = max_level[0]-1 # else check whats the index that comes before the first None item is found
+        return max_level 
 
 # Main script
 if __name__ == "__main__":
@@ -224,13 +226,12 @@ if __name__ == "__main__":
 
     all_samples = list()
     old_sample = None
-    # Encoding was necessary to avoid problems from the csv (only happend on the first line but was annoying)
+    # If you notice that the first prey item is missing or the sample is duplicated, uncomment the next line and comment the line after
     # with open(inpfile, encoding='utf-8-sig') as diet_table:
-
     with open(inpfile) as diet_table:
         for line in diet_table:
             info = line.split(";")
-            this_sample = info[0]
+            this_sample = info[0].strip()
 
             if old_sample is None or old_sample != this_sample:
                 # if no sample was added so far or a new sample is found
@@ -247,6 +248,5 @@ if __name__ == "__main__":
 
         for l_sample in all_samples:
             l_sample.concatenate_primers()
-
             out.write("\n".join(l_sample.make_output()))
             out.write("\n")
